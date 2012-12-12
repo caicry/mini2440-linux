@@ -5,8 +5,8 @@ if [ "x$CROSS_COMPILE" = 'x' ]
 then
     echo "import build mini2440 env"
     . ./build_mini2440_env.sh
-    make mini2440_defconfig
+#    make mini2440_defconfig
 fi
-make -j 2
+make -j 4
 
 cp -av arch/arm/boot/zImage $INSTALL_DIR/

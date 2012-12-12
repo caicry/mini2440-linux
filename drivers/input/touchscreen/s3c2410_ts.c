@@ -250,6 +250,7 @@ static int __devinit s3c2410ts_probe(struct platform_device *pdev)
 	memset(&ts, 0, sizeof(struct s3c2410ts));
 
 	ts.dev = dev;
+	ts.count = 0;
 
 	info = pdev->dev.platform_data;
 	if (!info) {

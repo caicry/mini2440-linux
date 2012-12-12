@@ -1246,6 +1246,7 @@ struct platform_device s3c_device_spi1 = {
 /* Touchscreen */
 
 #ifdef CONFIG_PLAT_S3C24XX
+
 static struct resource s3c_ts_resource[] = {
 	[0] = DEFINE_RES_MEM(S3C24XX_PA_ADC, S3C24XX_SZ_ADC),
 	[1] = DEFINE_RES_IRQ(IRQ_TC),

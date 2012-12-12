@@ -57,6 +57,7 @@
 #include <plat/clock.h>
 #include <plat/devs.h>
 #include <plat/cpu.h>
+#include <plat/ts.h>
 
 #include <sound/s3c24xx_uda134x.h>
 
@@ -336,31 +337,31 @@ static struct platform_device mini2440_device_eth = {
 static struct gpio_keys_button mini2440_buttons[] = {
 	{
 		.gpio		= S3C2410_GPG(0),		/* K1 */
-		.code		= KEY_F1,
+		.code		= KEY_UP,
 		.desc		= "Button 1",
 		.active_low	= 1,
 	},
 	{
 		.gpio		= S3C2410_GPG(3),		/* K2 */
-		.code		= KEY_F2,
+		.code		= KEY_DOWN,
 		.desc		= "Button 2",
 		.active_low	= 1,
 	},
 	{
 		.gpio		= S3C2410_GPG(5),		/* K3 */
-		.code		= KEY_F3,
+		.code		= KEY_ENTER,
 		.desc		= "Button 3",
 		.active_low	= 1,
 	},
 	{
 		.gpio		= S3C2410_GPG(6),		/* K4 */
-		.code		= KEY_POWER,
+		.code		= KEY_6,
 		.desc		= "Power",
 		.active_low	= 1,
 	},
 	{
 		.gpio		= S3C2410_GPG(7),		/* K5 */
-		.code		= KEY_F5,
+		.code		= KEY_7,
 		.desc		= "Button 5",
 		.active_low	= 1,
 	},
@@ -502,6 +503,15 @@ static struct platform_device uda1340_codec = {
 		.id = -1,
 };
 
+/*
+ *  Touch Screen
+ */
+static struct s3c2410_ts_mach_info mini2440_ts_info = {
+    .delay          = 10000,
+    .presc          = 0xff, /* slow as we can go */
+    .oversampling_shift = 2,
+};
+
 static struct platform_device *mini2440_devices[] __initdata = {
 	&s3c_device_ohci,
 	&s3c_device_wdt,
@@ -520,6 +530,7 @@ static struct platform_device *mini2440_devices[] __initdata = {
 	&uda1340_codec,
 	&mini2440_audio,
 	&samsung_asoc_dma,
+
 };
 
 static void __init mini2440_map_io(void)
@@ -597,14 +608,26 @@ static void __init mini2440_parse_features(
 				printk(KERN_INFO "MINI2440: '%c' ignored, "
 					"backlight already set\n", f);
 			else {
+						
 				features->optional[features->count++] =
 						&mini2440_led_backlight;
 			}
 			features->done |= FEATURE_BACKLIGHT;
 			break;
 		case 't':
-			printk(KERN_INFO "MINI2440: '%c' ignored, "
-				"touchscreen not compiled in\n", f);
+			if (features->done & FEATURE_TOUCH)
+				printk(KERN_INFO "MINI2440: '%c' ignored, "
+					"touchscreen already set\n", f);
+			else {
+				features->optional[features->count++] =
+						&s3c_device_adc;
+						
+				features->optional[features->count++] =
+						&s3c_device_ts;
+			}
+			features->done |= FEATURE_TOUCH;
+			//printk(KERN_INFO "MINI2440: '%c' ignored, "
+			//	"touchscreen not compiled in\n", f);
 			break;
 		case 'c':
 			if (features->done & FEATURE_CAMERA)
@@ -668,6 +691,8 @@ static void __init mini2440_init(void)
 	}
 
 	s3c24xx_udc_set_platdata(&mini2440_udc_cfg);
+	s3c24xx_ts_set_platdata(&mini2440_ts_info);
+	 
 	s3c24xx_mci_set_platdata(&mini2440_mmc_cfg);
 	s3c_nand_set_platdata(&mini2440_nand_info);
 	s3c_i2c0_set_platdata(NULL);
@@ -679,7 +704,6 @@ static void __init mini2440_init(void)
 
 	if (features.count)	/* the optional features */
 		platform_add_devices(features.optional, features.count);
-
 }
 
 
